@@ -1,5 +1,4 @@
 require 'heroku-api'
-
 module Delayed
   module Workless
     module Scaler
@@ -11,7 +10,7 @@ module Delayed
         end
 
         def self.down
-          client.post_ps_scale(ENV['APP_NAME'], 'worker', self.min_workers) unless self.jobs.where("locked_at IS NOT NULL OR run_at < ?", (Time.now + 5.minutes)).count > 0 or self.workers == self.min_workers
+          client.post_ps_scale(ENV['APP_NAME'], 'worker', self.min_workers) unless self.jobs.where("(locked_at IS NOT NULL AND run_at > ?) OR (locked_at IS NULL AND run_at < ?)",(Time.now - 3.minutes), (Time.now + 2.minutes)).count > 0 or self.workers == self.min_workers
         end
 
         def self.workers
